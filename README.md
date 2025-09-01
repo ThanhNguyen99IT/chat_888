@@ -21,19 +21,37 @@ project_root/
 ```
 
 ## Cài đặt nhanh
-- Backend
+
+### Backend
 ```bash
 cd backend
 npm install
 cp .env.example .env
-npm run dev
+# Chỉnh sửa file .env với thông tin database của bạn
+node server.js
 ```
-- Frontend (Flutter)
+
+### Frontend (Flutter)
 ```bash
 cd ../frontend
 flutter pub get
 flutter run
 ```
+
+## Cấu hình Database
+1. Tạo database PostgreSQL tên `datatest`
+2. Copy file `.env.example` thành `.env` trong thư mục backend
+3. Cập nhật thông tin database trong file `.env`:
+   ```
+   DB_USER=postgres
+   DB_PASSWORD=your_password
+   DB_NAME=datatest
+   ```
+
+## Authentication API
+- **POST** `/api/auth/register` - Đăng ký user mới
+- **POST** `/api/auth/login` - Đăng nhập
+- **GET** `/api/auth/profile` - Lấy thông tin user (cần token)
 
 ## API mẫu
 - `GET /api/health` → `{ status: "success", message: "OK", data: {} }`
