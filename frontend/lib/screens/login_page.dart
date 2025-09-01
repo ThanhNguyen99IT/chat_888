@@ -151,19 +151,16 @@ class _LoginPageState extends State<LoginPage> {
                     Positioned(
                       right: 12,
                       child: GestureDetector(
-                        onLongPress: () {
+                        onTap: () {
                           setState(() {
-                            _showPassword = true;
-                          });
-                        },
-                        onLongPressEnd: (details) {
-                          setState(() {
-                            _showPassword = false;
+                            _showPassword = !_showPassword;
                           });
                         },
                         child: Icon(
-                          Icons.remove_red_eye,
-                          size: 30.0,
+                          _showPassword
+                              ? Icons.visibility_off
+                              : Icons.visibility,
+                          size: 24.0,
                           color: _showPassword
                               ? AppTheme.primaryColor
                               : const Color(0xffCCCCCC),

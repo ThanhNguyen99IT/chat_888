@@ -150,19 +150,14 @@ class _RegisterPageState extends State<RegisterPage> {
                 Positioned(
                   right: 12,
                   child: GestureDetector(
-                    onLongPress: () {
+                    onTap: () {
                       setState(() {
-                        _showPassword1 = true;
-                      });
-                    },
-                    onLongPressEnd: (details) {
-                      setState(() {
-                        _showPassword1 = false;
+                        _showPassword1 = !_showPassword1;
                       });
                     },
                     child: Icon(
-                      Icons.remove_red_eye,
-                      size: 30.0,
+                      _showPassword1 ? Icons.visibility_off : Icons.visibility,
+                      size: 24.0,
                       color: _showPassword1
                           ? AppTheme.primaryColor
                           : const Color(0xffCCCCCC),
@@ -189,19 +184,14 @@ class _RegisterPageState extends State<RegisterPage> {
                 Positioned(
                   right: 12,
                   child: GestureDetector(
-                    onLongPress: () {
+                    onTap: () {
                       setState(() {
-                        _showPassword2 = true;
-                      });
-                    },
-                    onLongPressEnd: (details) {
-                      setState(() {
-                        _showPassword2 = false;
+                        _showPassword2 = !_showPassword2;
                       });
                     },
                     child: Icon(
-                      Icons.remove_red_eye,
-                      size: 30.0,
+                      _showPassword2 ? Icons.visibility_off : Icons.visibility,
+                      size: 24.0,
                       color: _showPassword2
                           ? AppTheme.primaryColor
                           : const Color(0xffCCCCCC),
