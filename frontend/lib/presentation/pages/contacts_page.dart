@@ -39,48 +39,72 @@ class _ContactsPageState extends State<ContactsPage> {
         backgroundColor: AppTheme.primaryColor,
         foregroundColor: Colors.white,
         elevation: 0,
+        leading: IconButton(
+          icon: const Icon(Icons.menu),
+          onPressed: () {
+            // TODO: Open drawer or menu
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('Mở menu'),
+                backgroundColor: Color(0xFF7B91FF),
+              ),
+            );
+          },
+        ),
       ),
-      body: ListView.builder(
-        itemCount: _contacts.length,
-        itemBuilder: (context, index) {
-          final contact = _contacts[index];
-          return ListTile(
-            leading: CircleAvatar(
-              backgroundColor: AppTheme.primaryColor,
-              child: Text(
-                contact['avatar'],
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
+      body: Container(
+        decoration: const BoxDecoration(color: Color(0xFF7B91FF)),
+        child: ClipRRect(
+          borderRadius: const BorderRadius.only(
+            topLeft: Radius.circular(25),
+            topRight: Radius.circular(25),
+          ),
+          child: Container(
+            color: Colors.white,
+            child: ListView.builder(
+              itemCount: _contacts.length,
+              itemBuilder: (context, index) {
+                final contact = _contacts[index];
+                return ListTile(
+                  leading: CircleAvatar(
+                    backgroundColor: AppTheme.primaryColor,
+                    child: Text(
+                      contact['avatar'],
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                  title: Text(
+                    contact['name'],
+                    style: const TextStyle(fontWeight: FontWeight.w600),
+                  ),
+                  subtitle: Text(contact['phone']),
+                  trailing: Container(
+                    width: 12,
+                    height: 12,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: contact['status'] == 'online'
+                          ? Colors.green
+                          : Colors.grey,
+                    ),
+                  ),
+                  onTap: () {
+                    // TODO: Navigate to chat with this contact
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text('Mở chat với ${contact['name']}'),
+                        backgroundColor: AppTheme.primaryColor,
+                      ),
+                    );
+                  },
+                );
+              },
             ),
-            title: Text(
-              contact['name'],
-              style: const TextStyle(fontWeight: FontWeight.w600),
-            ),
-            subtitle: Text(contact['phone']),
-            trailing: Container(
-              width: 12,
-              height: 12,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: contact['status'] == 'online'
-                    ? Colors.green
-                    : Colors.grey,
-              ),
-            ),
-            onTap: () {
-              // TODO: Navigate to chat with this contact
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text('Mở chat với ${contact['name']}'),
-                  backgroundColor: AppTheme.primaryColor,
-                ),
-              );
-            },
-          );
-        },
+          ),
+        ),
       ),
     );
   }

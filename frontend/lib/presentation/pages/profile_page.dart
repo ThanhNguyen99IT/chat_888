@@ -66,6 +66,18 @@ class _ProfilePageState extends State<ProfilePage> {
         backgroundColor: AppTheme.primaryColor,
         foregroundColor: Colors.white,
         elevation: 0,
+        leading: IconButton(
+          icon: const Icon(Icons.menu),
+          onPressed: () {
+            // TODO: Open drawer or menu
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('Mở menu'),
+                backgroundColor: Color(0xFF7B91FF),
+              ),
+            );
+          },
+        ),
         actions: [
           IconButton(
             icon: const Icon(Iconsax.setting_2),
@@ -81,137 +93,149 @@ class _ProfilePageState extends State<ProfilePage> {
           ),
         ],
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          children: [
-            // Profile Header
-            Container(
-              padding: const EdgeInsets.all(20),
-              decoration: BoxDecoration(
-                color: AppTheme.primaryColor.withOpacity(0.1),
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Row(
+      body: Container(
+        decoration: const BoxDecoration(color: Color(0xFF7B91FF)),
+        child: ClipRRect(
+          borderRadius: const BorderRadius.only(
+            topLeft: Radius.circular(25),
+            topRight: Radius.circular(25),
+          ),
+          child: Container(
+            color: Colors.white,
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.all(16),
+              child: Column(
                 children: [
-                  CircleAvatar(
-                    radius: 40,
-                    backgroundColor: AppTheme.primaryColor,
-                    child: Text(
-                      _userProfile['avatar'],
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 24,
-                        fontWeight: FontWeight.bold,
-                      ),
+                  // Profile Header
+                  Container(
+                    padding: const EdgeInsets.all(20),
+                    decoration: BoxDecoration(
+                      color: AppTheme.primaryColor.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(12),
                     ),
-                  ),
-                  const SizedBox(width: 16),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
+                    child: Row(
                       children: [
-                        Text(
-                          _userProfile['name'],
-                          style: const TextStyle(
-                            fontSize: 20,
-                            fontWeight: FontWeight.bold,
+                        CircleAvatar(
+                          radius: 40,
+                          backgroundColor: AppTheme.primaryColor,
+                          child: Text(
+                            _userProfile['avatar'],
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 24,
+                              fontWeight: FontWeight.bold,
+                            ),
                           ),
                         ),
-                        const SizedBox(height: 4),
-                        Text(
-                          _userProfile['phone'],
-                          style: TextStyle(
-                            color: Colors.grey[600],
-                            fontSize: 14,
+                        const SizedBox(width: 16),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                _userProfile['name'],
+                                style: const TextStyle(
+                                  fontSize: 20,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                              const SizedBox(height: 4),
+                              Text(
+                                _userProfile['phone'],
+                                style: TextStyle(
+                                  color: Colors.grey[600],
+                                  fontSize: 14,
+                                ),
+                              ),
+                              const SizedBox(height: 4),
+                              Row(
+                                children: [
+                                  Container(
+                                    width: 8,
+                                    height: 8,
+                                    decoration: const BoxDecoration(
+                                      shape: BoxShape.circle,
+                                      color: Colors.green,
+                                    ),
+                                  ),
+                                  const SizedBox(width: 4),
+                                  Text(
+                                    'Online',
+                                    style: TextStyle(
+                                      color: Colors.green[700],
+                                      fontSize: 12,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ],
                           ),
-                        ),
-                        const SizedBox(height: 4),
-                        Row(
-                          children: [
-                            Container(
-                              width: 8,
-                              height: 8,
-                              decoration: const BoxDecoration(
-                                shape: BoxShape.circle,
-                                color: Colors.green,
-                              ),
-                            ),
-                            const SizedBox(width: 4),
-                            Text(
-                              'Online',
-                              style: TextStyle(
-                                color: Colors.green[700],
-                                fontSize: 12,
-                              ),
-                            ),
-                          ],
                         ),
                       ],
+                    ),
+                  ),
+                  const SizedBox(height: 24),
+
+                  // Menu Items
+                  _buildMenuItem(
+                    icon: Iconsax.user_edit,
+                    title: 'Chỉnh sửa thông tin',
+                    onTap: () {
+                      // TODO: Edit profile
+                    },
+                  ),
+                  _buildMenuItem(
+                    icon: Iconsax.notification,
+                    title: 'Thông báo',
+                    onTap: () {
+                      // TODO: Notification settings
+                    },
+                  ),
+                  _buildMenuItem(
+                    icon: Iconsax.shield_tick,
+                    title: 'Bảo mật',
+                    onTap: () {
+                      // TODO: Security settings
+                    },
+                  ),
+                  _buildMenuItem(
+                    icon: Iconsax.message_question,
+                    title: 'Trợ giúp',
+                    onTap: () {
+                      // TODO: Help center
+                    },
+                  ),
+                  _buildMenuItem(
+                    icon: Iconsax.info_circle,
+                    title: 'Về ứng dụng',
+                    onTap: () {
+                      // TODO: About app
+                    },
+                  ),
+
+                  const SizedBox(height: 24),
+
+                  // Logout Button
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton.icon(
+                      onPressed: _showLogoutDialog,
+                      icon: const Icon(Iconsax.logout),
+                      label: const Text('Đăng xuất'),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.red,
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                      ),
                     ),
                   ),
                 ],
               ),
             ),
-            const SizedBox(height: 24),
-
-            // Menu Items
-            _buildMenuItem(
-              icon: Iconsax.user_edit,
-              title: 'Chỉnh sửa thông tin',
-              onTap: () {
-                // TODO: Edit profile
-              },
-            ),
-            _buildMenuItem(
-              icon: Iconsax.notification,
-              title: 'Thông báo',
-              onTap: () {
-                // TODO: Notification settings
-              },
-            ),
-            _buildMenuItem(
-              icon: Iconsax.shield_tick,
-              title: 'Bảo mật',
-              onTap: () {
-                // TODO: Security settings
-              },
-            ),
-            _buildMenuItem(
-              icon: Iconsax.message_question,
-              title: 'Trợ giúp',
-              onTap: () {
-                // TODO: Help center
-              },
-            ),
-            _buildMenuItem(
-              icon: Iconsax.info_circle,
-              title: 'Về ứng dụng',
-              onTap: () {
-                // TODO: About app
-              },
-            ),
-
-            const SizedBox(height: 24),
-
-            // Logout Button
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton.icon(
-                onPressed: _showLogoutDialog,
-                icon: const Icon(Iconsax.logout),
-                label: const Text('Đăng xuất'),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.red,
-                  foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(vertical: 16),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                ),
-              ),
-            ),
-          ],
+          ),
         ),
       ),
     );
