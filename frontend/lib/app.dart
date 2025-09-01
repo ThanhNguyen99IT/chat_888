@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'screens/login_page.dart';
+import 'presentation/pages/main_page.dart';
 import 'core/theme/app_theme.dart';
 
 class App extends StatelessWidget {
@@ -10,7 +10,7 @@ class App extends StatelessWidget {
     return MaterialApp(
       title: '888',
       theme: AppTheme.lightTheme,
-      home: const LoginPage(),
+      home: const MainPage(),
     );
   }
 }
