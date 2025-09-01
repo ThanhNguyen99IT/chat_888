@@ -1,0 +1,35 @@
+# Global
+.DS_Store
+
+# Node
+node_modules/
+*.log
+logs/
+.env
+
+# Backend
+/backend/node_modules/
+/backend/.env
+
+# Flutter
+**/build/
+.dart_tool/
+.flutter-plugins
+.flutter-plugins-dependencies
+.packages
+
+# Android/iOS artifacts
+**/ios/Pods/
+**/ios/Runner.xcworkspace/
+**/android/.gradle/
+**/android/app/build/
+**/android/local.properties
+
+# Web/Vite (Memory_Bank)
+Memory_Bank/node_modules/
+Memory_Bank/dist/
+
+# IDE
+.idea/
+.vscode/
+*.iml

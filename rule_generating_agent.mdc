@@ -1,0 +1,394 @@
+---
+description: Bộ quy tắc chi tiết cho dự án Flutter + Node.js + PostgreSQL (chuẩn cho Cursor)
+globs:
+  - frontend/lib/**/*.dart
+  - backend/**/*.js
+  - frontend/test/**/*.dart
+alwaysApply: true
+---
+
+# Bộ quy tắc dự án Flutter + Node.js + PostgreSQL (dành cho Cursor)
+
+## Bối cảnh
+- Áp dụng cho toàn bộ source Flutter (`frontend/lib/`), Node.js backend (`backend/`), và file test Flutter (`frontend/test/`).
+- Mục tiêu: Kế hoạch rõ ràng, bộ khung chuẩn, tối ưu hiệu năng/tài nguyên, tính nhất quán toàn dự án, giao tiếp súc tích nhưng cho kết quả tốt nhất.
+- Tất cả mô tả, chú thích, logs và output của trợ lý phải bằng tiếng Việt.
+- Không hỏi về git/commit nếu người dùng không yêu cầu.
+
+---
+
+## Quy tắc vận hành dành cho Cursor (tiết kiệm tài nguyên)
+- **BẢO MẬT: KHÔNG BAO GIỜ đọc file `.env`** - chỉ tham khảo `.env.example` để hiểu cấu trúc.
+- Luôn lập kế hoạch ngắn gọn trước khi chỉnh sửa (dạng checklist 3-7 mục).
+- Gom thao tác: đọc nhiều file hoặc thực thi nhiều lệnh song song khi độc lập.
+- Chỉ hỏi lại khi thật sự bị chặn; ưu tiên tự tìm trong repo trước.
+- Trả lời súc tích, tập trung vào kết quả và chỉ dẫn hành động cụ thể.
+- Khi tạo nhiều file, tạo theo batches hợp lý, tránh tạo rải rác nhiều lượt.
+- Ưu tiên scaffold chuẩn trước, rồi dần hoàn thiện tính năng theo module.
+- Luôn dùng code snippet ngắn, đủ ngữ cảnh; tránh dán file dài.
+
+---
+
+ 
+
+## Quy tắc quan trọng (Flutter)
+- Sử dụng `const` cho widget bất biến, thêm `Key` cho widget danh sách.
+- Không đặt business logic hoặc API call trực tiếp trong UI. Áp dụng kiến trúc tách lớp: `presentation` ↔ `domain` ↔ `data`.
+- Ưu tiên state management: Riverpod/Bloc (chọn 1, nhất quán). Tránh lạm dụng `setState` ở widget lớn.
+- Đặt tên class PascalCase; biến/hàm camelCase; file_name_snake_case.
+- Theming: tất cả màu, font, spacing qua `ThemeData`/Design System. Không hardcode trong UI.
+- Networking: dùng `dio` (hoặc `http`) qua layer datasource; cấu hình timeout, interceptors, retry (tùy nhu cầu).
+- Serialization: dùng `json_serializable` cho DTOs. Không parse thủ công trong UI.
+- Xử lý lỗi tập trung: `Failure/Exception` → mapper để hiện thông điệp tiếng Việt.
+- Điều hướng: `go_router` hoặc `auto_route` (chọn 1), centralize cấu hình route.
+- Hiệu năng UI:
+  - Dùng `const`, `const constructors` tối đa.
+  - Chia nhỏ widget phức tạp; dùng `Selector`/`Consumer` (Riverpod) hoặc `BlocBuilder` đúng scope.
+  - Tránh rebuild không cần thiết (memoization, keys, immutable state).
+  - Async: debounce/throttle cho tìm kiếm; pagination/infinite scroll cho danh sách.
+- Assets/Images: dùng `cached_network_image` cho ảnh network; khai báo `pubspec.yaml` rõ ràng.
+- Quốc tế hóa: sẵn sàng `intl` nếu cần; mặc định tiếng Việt.
+- Lints/builder:
+  - Bật `flutter_lints`/`very_good_analysis`.
+  - Chạy `flutter analyze` + `dart fix --apply` trước commit.
+- Kiểm thử:
+  - Unit test cho usecases, repositories.
+  - Widget test cho UI quan trọng.
+  - Golden test cho component chủ đạo (nếu cần).
+- Flavors/Env:
+  - Hỗ trợ `dev/stg/prod`; tách `main_dev.dart`, `main_prod.dart`.
+  - Đọc cấu hình từ `--dart-define` hoặc `.env` (flutter_dotenv).
+
+### Checklist khi tạo màn hình mới (Flutter)
+- [ ] Tạo entity/usecase nếu cần (domain).
+- [ ] Tạo model/mapper/datasource/repository (data) nếu có API.
+- [ ] Tạo provider/bloc (presentation/state).
+- [ ] Tạo page + widgets; dùng theme; không hardcode.
+- [ ] Viết test cơ bản (unit hoặc widget).
+
+---
+
+## Quy tắc quan trọng (Node.js + PostgreSQL)
+- Kết nối DB bằng `pg` hoặc `sequelize`.
+- Biến môi trường trong `.env` (PORT, DATABASE_URL, JWT_SECRET...), không ghi trực tiếp chuỗi kết nối.
+- Tất cả truy vấn SQL dùng prepared statements để tránh SQL injection.
+- Cấu trúc thư mục backend:
+  - `/backend/routes` → định nghĩa endpoint.
+  - `/backend/controllers` → xử lý logic.
+  - `/backend/models` → định nghĩa cấu trúc dữ liệu (nếu dùng ORM).
+  - `/backend/config` → cấu hình DB, middleware, logger, rate-limit, cors.
+- Trả về JSON chuẩn tiếng Việt:
+```json
+{
+  "status": "success" | "error",
+  "message": "Mô tả bằng tiếng Việt",
+  "data": {}
+}
+```
+- Bảo mật/ổn định:
+  - **KHÔNG BAO GIỜ đọc file `.env`** - chỉ tham khảo `.env.example` để hiểu cấu trúc.
+  - Bật `helmet`, `cors` phù hợp nguồn.
+  - `rate-limit` cho endpoint nhạy cảm.
+  - Logging có mask dữ liệu nhạy cảm.
+  - Validation đầu vào bằng `joi`/`zod`.
+- Migration/seed: dùng `sequelize-cli` hoặc `node-pg-migrate`.
+- Test API: supertest + jest; tránh phụ thuộc vào DB thật (dùng container hoặc test DB).
+
+### Mẫu route/controller (Express + pg, prepared statements)
+```js
+// backend/routes/memories.js
+const express = require('express');
+const router = express.Router();
+const controller = require('../controllers/memories');
+
+router.get('/', controller.list);
+router.post('/', controller.create);
+router.get('/:id', controller.detail);
+router.put('/:id', controller.update);
+router.delete('/:id', controller.remove);
+
+module.exports = router;
+```
+```js
+// backend/controllers/memories.js
+const db = require('../config/db');
+
+exports.list = async (req, res) => {
+  try {
+    const { rows } = await db.query('SELECT * FROM memories ORDER BY created_at DESC');
+    return res.json({ status: 'success', message: 'Lấy danh sách thành công', data: rows });
+  } catch (e) {
+    return res.status(500).json({ status: 'error', message: 'Lỗi máy chủ', data: {} });
+  }
+};
+
+exports.create = async (req, res) => {
+  try {
+    const { title, content } = req.body;
+    const q = 'INSERT INTO memories(title, content) VALUES($1,$2) RETURNING *';
+    const { rows } = await db.query(q, [title, content]);
+    return res.status(201).json({ status: 'success', message: 'Tạo bản ghi thành công', data: rows[0] });
+  } catch (e) {
+    return res.status(400).json({ status: 'error', message: 'Dữ liệu không hợp lệ', data: {} });
+  }
+};
+```
+
+---
+
+## Quy ước code & đặt tên (toàn dự án)
+- Giữ một phong cách thống nhất: Dart/Flutter theo Effective Dart; JS theo Standard/ESLint.
+- Tên module/màn hình phải phản ánh nhiệm vụ; tránh viết tắt tối nghĩa.
+- Bình luận ngắn gọn, mô tả "tại sao" thay vì "làm gì".
+- Không để TODO kéo dài; nếu cần, tạo issue/hạng mục công việc rõ ràng.
+
+---
+
+## Kế hoạch khởi tạo dự án (gợi ý thao tác tuần tự)
+1) Scaffold Flutter:
+- Tạo cấu trúc thư mục theo mục "Cấu trúc dự án dùng chung (Basic)"; thêm `flutter_lints`, `json_serializable`, `riverpod`/`bloc`, `dio`, `go_router`/`auto_route`, `flutter_dotenv`.
+- Thiết lập `ThemeData`, router, DI (get_it/riverpod) cơ bản.
+
+2) Scaffold Backend Node.js:
+- Tạo `backend/` với `config/controllers/routes/models`.
+- Cài `express`, `pg`/`sequelize`, `dotenv`, `helmet`, `cors`, `morgan`, `joi`/`zod`.
+- Tạo kết nối DB và 1 route mẫu.
+
+3) Thiết lập CI/lint/test:
+- Flutter: `flutter analyze`, `dart test`.
+- Node: `eslint`, `jest`, `supertest`.
+
+4) Môi trường & cấu hình:
+- Tạo `.env.example` cho cả mobile và API.
+- Thêm scripts chạy dev/stg/prod.
+
+---
+
+## Tối ưu hiệu năng & tiết kiệm tài nguyên
+- Flutter:
+  - Rebuild tối thiểu (state đúng phạm vi, selector).
+  - Sử dụng `const`, `const constructors`, `const SizedBox()` thay vì `Container` rỗng.
+  - Hạn chế setState diện rộng; ưu tiên immutable state.
+  - Cache ảnh, pagination, lazy build (ListView.builder, SliverList).
+- Node:
+  - Kết nối DB dạng pool, đóng tài nguyên đúng cách.
+  - Prepared statements, index DB phù hợp.
+  - Log ở mức cần thiết; xoay vòng log nếu có.
+- Cursor:
+  - Gom thay đổi, tránh nhiều vòng hỏi/đáp.
+  - Chỉ build/run khi cần kiểm chứng; không lặp vô ích.
+
+---
+
+## Checklist trước khi merge
+- [ ] Code pass lint/format (Flutter + Node).
+- [ ] Có test cơ bản cho logic quan trọng.
+- [ ] UI không hardcode màu/spacing; qua theme.
+- [ ] API trả JSON tiếng Việt, thống nhất schema.
+- [ ] Không chứa secrets trong code, `.env` đầy đủ.
+- [ ] PR mô tả ngắn gọn: mục tiêu, thay đổi chính, ảnh/chụp màn hình nếu là UI.
+
+---
+
+## Mẫu mô tả PR (tiếng Việt)
+```
+Tiêu đề: [Module/Màn hình] - Tính năng XYZ
+
+Mục tiêu
+- Tóm tắt ngắn gọn lý do và lợi ích.
+
+Thay đổi chính
+- [ ] Điểm 1
+- [ ] Điểm 2
+
+Kiểm thử
+- Bước tái hiện, kết quả mong đợi.
+
+Ghi chú
+- Ảnh/Video (nếu UI), lưu ý kỹ thuật.
+```
+
+---
+
+## Phụ lục: công nghệ gợi ý (tham khảo)
+- Flutter: riverpod/bloc, dio, go_router/auto_route, json_serializable, flutter_dotenv, cached_network_image.
+- Node: express, pg/sequelize, dotenv, helmet, cors, joi/zod, morgan, jest, supertest.
+
+---
+
+Tài liệu này hướng dẫn Cursor vận hành hiệu quả, tạo nền tảng vững chắc để xây dựng dự án Flutter + Node.js + PostgreSQL với hiệu năng cao, tính nhất quán và chi phí tài nguyên thấp.
+
+---
+
+## Quy tắc ghi chú sau mỗi chức năng (file ghi_chu hoặc ghi_chu.md)
+- Vị trí file: tại root repository, tên: `ghi_chu` (không phần mở rộng) hoặc `ghi_chu.md`.
+- Cách ghi: mỗi chức năng hoàn tất thì append một mục mới theo khuôn sau:
+```text
+[YYYY-MM-DD HH:mm] Tên chức năng: <mô tả ngắn>
+- File liên quan: <đường_dẫn_1>, <đường_dẫn_2>, ...
+- Thư viện/liên quan: <gói/phiên_bản>, ...
+- Kỹ thuật/thuật toán: <tên> (Độ phức tạp: thời_gian O(...), bộ_nhớ O(...))
+- Thủ thuật đã dùng: <mô tả ngắn/nếu có>
+- Thủ thuật tương tự để tham khảo: <tên_1>, <tên_2>, ...
+- Ghi chú khác: <tùy chọn>
+```
+- Yêu cầu:
+  - Ghi rõ ràng, ngắn gọn, tiếng Việt; nêu Big-O nếu áp dụng.
+  - Liệt kê ít nhất 2 kỹ thuật tương tự để tham khảo (nếu có).
+  - Mục tiêu là giúp truyền giao nhanh cho model/đồng đội kế tiếp.
+
+## Ký hiệu “##” làm chỉ thị chèn mã tại chỗ
+- Khi yêu cầu có chuỗi bắt đầu bằng `##`, xem đó là chỉ thị vị trí/chỗ cần viết mã theo mô tả ngay sau ký hiệu.
+- Hành vi:
+  - Nếu đã chỉ rõ file và vị trí, chèn đúng chỗ được chỉ định; không thay đổi phần khác.
+  - Nếu chưa rõ vị trí, tạo snippet tối thiểu cần thiết và hướng dẫn chèn vào đâu (đường dẫn + vùng/khối liên quan).
+  - Viết đúng theo yêu cầu sau `##`, không thêm thuyết minh dư thừa ngoài phần cần để chạy.
+- Trường hợp có nhiều `##`, xử lý theo thứ tự xuất hiện.
+- Nếu ngữ cảnh thiếu, đặt duy nhất một câu hỏi làm rõ; nếu vẫn chưa có, chọn vị trí mặc định hợp lý và ghi rõ giả định.
+
+---
+
+## Cấu trúc dự án dùng chung (Basic – tương thích Flutter & Cursor)
+```
+project_root/
+│── README.md                  # Giới thiệu dự án (mục đích, cài đặt, chạy)
+│── ghi_chu.md                 # Ghi chú kỹ thuật, trick, liên kết, độ phức tạp
+│── Memory_Bank.md             # Ghi nhớ tiến trình/giai đoạn dự án
+│── rule_generating_agent.mdc  # Rule cho Cursor/AI sinh code
+│
+├── backend/                   # Backend Node.js + PostgreSQL
+│   ├── server.js              # Entry point
+│   ├── routes/                # Định nghĩa API endpoint
+│   ├── controllers/           # Xử lý logic của route
+│   ├── models/                # ORM/schema kết nối PostgreSQL
+│   ├── middleware/            # Middleware: auth, validate, log
+│   └── config/                # Config DB, biến môi trường
+│
+├── frontend/                  # Ứng dụng Flutter
+│   ├── lib/
+│   │   ├── main.dart          # Entry point app
+│   │   │
+│   │   ├── api/               # Service gọi API (Node.js backend)
+│   │   ├── models/            # Định nghĩa model cho dữ liệu (DTO)
+│   │   ├── screens/           # Các màn hình chính (Home, Login, Detail,...)
+│   │   ├── widgets/           # Widget tái sử dụng
+│   │   ├── utils/             # Hàm tiện ích, formatter, validator
+│   │   └── theme/             # Màu sắc, fonts, style dùng chung
+│   │
+│   ├── assets/
+│   │   ├── images/            # Hình ảnh tĩnh
+│   │   └── icons/             # Icon tuỳ chỉnh
+│   │
+│   ├── test/                  # Kiểm thử Flutter (unit/widget/integration)
+│   │   ├── unit/
+│   │   ├── widget/
+│   │   └── integration/
+│   │
+│   ├── android/               # Nền tảng
+│   ├── ios/
+│   ├── macos/
+│   ├── linux/
+│   ├── windows/
+│   ├── web/
+│   │
+│   └── pubspec.yaml           # Khai báo thư viện (http/dio, provider/riverpod, ...)
+│
+└── Memory_Bank/               # Web app demo/component (Vite + React + TypeScript)
+    ├── src/
+    ├── public/
+    ├── package.json
+    └── vite.config.ts
+```
+
+Ghi chú tương thích & tối ưu:
+- Cấu trúc "Basic" là mặc định cho dự án mới và là nguồn chân lý duy nhất khi khởi tạo.
+- Ánh xạ nâng cấp (tùy chọn khi dự án mở rộng, đảm bảo di chuyển nhất quán – không để song song hai cấu trúc):
+  - `frontend/lib/api` → `frontend/lib/data/datasources`
+  - `frontend/lib/models` → `frontend/lib/data/models` (+ thêm `frontend/lib/domain/entities` nếu cần tách entity)
+  - `frontend/lib/screens` → `frontend/lib/presentation/pages`
+  - `frontend/lib/widgets` → `frontend/lib/presentation/widgets`
+  - `frontend/lib/utils` → `frontend/lib/core/utils`
+  - `frontend/lib/theme` → giữ nguyên hoặc `frontend/lib/core/theme` (chọn 1 cách và dùng thống nhất)
+  - Bổ sung thư mục khi nâng cấp: `frontend/lib/presentation/state`, `frontend/lib/core/routing`, `frontend/lib/core/di`
+  - Kiểm thử giữ nguyên tại `frontend/test/{unit,widget,integration}`.
+- Nguyên tắc nhất quán khi nâng cấp:
+  - Không để trùng lặp đường dẫn cũ/mới. Di chuyển theo module và cập nhật toàn bộ import trong module đó.
+  - Đặt tên thống nhất: PascalCase (class), camelCase (biến/hàm), snake_case (file).
+  - Với import dài, cân nhắc alias theo package để giảm thay đổi lớn về sau (ví dụ: `package:app/data/...`).
+- `Memory_Bank.md` ghi tiến trình theo giai đoạn; `ghi_chu.md` ghi chi tiết kỹ thuật (thuật toán, Big‑O, trick).
+- Cursor cần `rule_generating_agent.mdc` ở root để tự áp quy tắc; VS Code không tự áp, hãy dùng lint/CI tương ứng.
+
+---
+
+## Quy tắc README.md (tài liệu public, hướng dẫn tổng quan)
+- Mục tiêu: giúp thành viên mới, người dùng, khách hàng, cộng đồng hiểu nhanh dự án.
+- Tính chất: ngắn gọn, thân thiện, công khai; không đi sâu chi tiết kỹ thuật, không trùng chức năng với `ghi_chu.md`.
+- Không chứa bí mật (keys, token, connection string). Liên kết tới tài liệu chi tiết nếu cần.
+
+Nội dung khuyến nghị:
+1) Giới thiệu dự án
+   - 1–3 câu: dự án làm gì, giá trị mang lại.
+   - Ví dụ: "Ứng dụng chẩn đoán bệnh trên lúa bằng AI và PostgreSQL".
+
+2) Hướng dẫn cài đặt & chạy (Quick start)
+   - Các bước cài đặt ngắn gọn: clone, cài dependency, chạy dev.
+   - Nêu lệnh nền tảng (Node/Flutter/PostgreSQL) tối giản để chạy được.
+
+3) Môi trường & cấu hình
+   - Liệt kê version yêu cầu: Node.js, Flutter SDK, PostgreSQL.
+   - Chỉ rõ file `.env` (có thể link tới `.env.example`).
+
+4) Cấu trúc thư mục
+   - Trích sơ đồ cấu trúc chính (rút gọn) để người đọc định hướng.
+
+5) Sử dụng (Usage)
+   - Backend: ví dụ API endpoint (request/response ngắn gọn).
+   - Flutter: luồng thao tác cơ bản (login, upload ảnh…) ở mức người dùng.
+
+6) Thư viện sử dụng (chủ đạo)
+   - Liệt kê các dependency quan trọng (tên + 1 dòng vai trò).
+
+7) Ghi chú khác
+   - License, tác giả/liên hệ, đường dẫn demo, badge CI.
+
+Mẫu README rút gọn:
+```markdown
+# Tên dự án
+
+> Mô tả ngắn gọn 1–3 câu: dự án làm gì, dành cho ai, giá trị.
+
+## Cài đặt nhanh
+```bash
+git clone <repo>
+cd <folder>
+# Backend / Frontend tuỳ dự án
+npm install && npm run dev
+# hoặc
+flutter pub get && flutter run
+```
+
+## Môi trường & cấu hình
+- Node >= X, Flutter SDK >= Y, PostgreSQL >= Z
+- Sao chép `.env.example` → `.env` và điền biến cần thiết
+
+## Cấu trúc thư mục
+```
+project_root/
+├─ backend/
+└─ frontend/
+```
+
+## Sử dụng
+- API: `GET /api/health` → `{ status: "ok" }`
+- Ứng dụng di động: Đăng nhập → Chọn … → Thực hiện …
+
+## Thư viện chính
+- express: server API
+- dio: HTTP client (Flutter)
+
+## Ghi chú
+- License: MIT
+- Liên hệ: …
+```
+
+Lưu ý cập nhật README khi có thay đổi lớn; tránh đưa chi tiết kỹ thuật dài (đưa sang `ghi_chu.md` hoặc wiki) để không trùng lặp và không lãng phí.
