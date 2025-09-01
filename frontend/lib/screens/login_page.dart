@@ -3,6 +3,8 @@ import 'register_page.dart';
 import 'forgot_password_page.dart';
 import '../presentation/pages/home_page.dart';
 import '../core/theme/app_theme.dart';
+import '../data/datasources/auth_api.dart';
+import '../data/models/user_model.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -17,6 +19,7 @@ class _LoginPageState extends State<LoginPage> {
   bool _showPassword = false;
   bool _isQuenMatKhauPressed = false;
   bool _isTaoTaiKhoanPressed = false;
+  bool _isLoading = false;
 
   @override
   void dispose() {
@@ -25,34 +28,55 @@ class _LoginPageState extends State<LoginPage> {
     super.dispose();
   }
 
-  void _dangNhap() {
-    final phone = _phoneController.text;
-    final password = _passwordController.text;
+  Future<void> _handleLogin() async {
+    if (_phoneController.text.isEmpty || _passwordController.text.isEmpty) {
+      _showMessage('Vui lòng nhập đầy đủ thông tin');
+      return;
+    }
 
-    if (phone.length < 6 || password.length < 6) {
-      showDialog(
-        context: context,
-        builder: (context) => const AlertDialog(
-          content: Text("Số điện thoại hoặc mật khẩu không đủ 6 ký tự!"),
+    setState(() {
+      _isLoading = true;
+    });
+
+    try {
+      final response = await AuthApi.login(
+        phone: _phoneController.text.trim(),
+        password: _passwordController.text,
+      );
+
+      if (response.isSuccess && response.user != null) {
+        // Đăng nhập thành công, chuyển đến trang chủ
+        if (mounted) {
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (context) => const HomePage()),
+          );
+        }
+      } else {
+        _showMessage(response.message);
+      }
+    } catch (e) {
+      _showMessage('Đã xảy ra lỗi: $e');
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
+    }
+  }
+
+  void _showMessage(String message) {
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(message),
+          backgroundColor: message.contains('thành công')
+              ? Colors.green
+              : Colors.red,
         ),
       );
-      return;
     }
-
-    final isValidPhone = RegExp(r'(^(?:[+0]9)?[0-9]{10,12}$)').hasMatch(phone);
-    if (!isValidPhone) {
-      showDialog(
-        context: context,
-        builder: (context) =>
-            const AlertDialog(content: Text("Số điện thoại không hợp lệ!")),
-      );
-      return;
-    }
-
-    Navigator.pushReplacement(
-      context,
-      MaterialPageRoute(builder: (context) => const HomePage()),
-    );
   }
 
   void _onQuenMatKhauTap() {
@@ -152,14 +176,25 @@ class _LoginPageState extends State<LoginPage> {
                 SizedBox(
                   width: double.infinity,
                   child: ElevatedButton(
-                    onPressed: _dangNhap,
+                    onPressed: _isLoading ? null : _handleLogin,
                     style: ElevatedButton.styleFrom(
                       padding: const EdgeInsets.only(top: 16, bottom: 16),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(8),
                       ),
                     ),
-                    child: const Text('Đăng nhập'),
+                    child: _isLoading
+                        ? const SizedBox(
+                            height: 20,
+                            width: 20,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              valueColor: AlwaysStoppedAnimation<Color>(
+                                Colors.white,
+                              ),
+                            ),
+                          )
+                        : const Text('Đăng nhập'),
                   ),
                 ),
               ],

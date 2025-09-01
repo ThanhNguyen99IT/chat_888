@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
 import '../core/theme/app_theme.dart';
+import '../data/datasources/auth_api.dart';
+import '../data/models/user_model.dart';
+import '../presentation/pages/home_page.dart';
+import 'login_page.dart';
 
 class RegisterPage extends StatefulWidget {
   const RegisterPage({super.key});
@@ -9,23 +13,89 @@ class RegisterPage extends StatefulWidget {
 }
 
 class _RegisterPageState extends State<RegisterPage> {
+  final _nameController = TextEditingController();
   final _phoneController = TextEditingController();
   final _passwordController = TextEditingController();
   final _confirmPasswordController = TextEditingController();
   bool _showPassword1 = false;
   bool _showPassword2 = false;
+  bool _isLoading = false;
 
   @override
   void dispose() {
+    _nameController.dispose();
     _phoneController.dispose();
     _passwordController.dispose();
     _confirmPasswordController.dispose();
     super.dispose();
   }
 
-  void _dangKy() {
-    // TODO: Implement registration logic
-    Navigator.pop(context);
+  Future<void> _handleRegister() async {
+    if (_nameController.text.isEmpty ||
+        _phoneController.text.isEmpty ||
+        _passwordController.text.isEmpty ||
+        _confirmPasswordController.text.isEmpty) {
+      _showMessage('Vui lòng điền đầy đủ thông tin');
+      return;
+    }
+
+    if (_passwordController.text != _confirmPasswordController.text) {
+      _showMessage('Mật khẩu xác nhận không khớp');
+      return;
+    }
+
+    if (_passwordController.text.length < 6) {
+      _showMessage('Mật khẩu phải có ít nhất 6 ký tự');
+      return;
+    }
+
+    setState(() {
+      _isLoading = true;
+    });
+
+    try {
+      final response = await AuthApi.register(
+        name: _nameController.text.trim(),
+        phone: _phoneController.text.trim(),
+        password: _passwordController.text,
+      );
+
+      if (response.isSuccess && response.user != null) {
+        _showMessage('Đăng ký thành công!');
+        // Chuyển về trang đăng nhập sau 1 giây
+        Future.delayed(const Duration(seconds: 1), () {
+          if (mounted) {
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(builder: (context) => const LoginPage()),
+            );
+          }
+        });
+      } else {
+        _showMessage(response.message);
+      }
+    } catch (e) {
+      _showMessage('Đã xảy ra lỗi: $e');
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
+    }
+  }
+
+  void _showMessage(String message) {
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(message),
+          backgroundColor: message.contains('thành công')
+              ? Colors.green
+              : Colors.red,
+        ),
+      );
+    }
   }
 
   @override
@@ -41,6 +111,17 @@ class _RegisterPageState extends State<RegisterPage> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
+            TextField(
+              controller: _nameController,
+              decoration: const InputDecoration(
+                hintText: "Họ và tên",
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.all(Radius.circular(8)),
+                ),
+                hintStyle: TextStyle(color: Color(0xffCCCCCC)),
+              ),
+            ),
+            const SizedBox(height: 10),
             TextField(
               controller: _phoneController,
               decoration: const InputDecoration(
@@ -133,14 +214,25 @@ class _RegisterPageState extends State<RegisterPage> {
             SizedBox(
               width: double.infinity,
               child: ElevatedButton(
-                onPressed: _dangKy,
+                onPressed: _isLoading ? null : _handleRegister,
                 style: ElevatedButton.styleFrom(
                   padding: const EdgeInsets.only(top: 16, bottom: 16),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(8),
                   ),
                 ),
-                child: const Text('Đăng ký'),
+                child: _isLoading
+                    ? const SizedBox(
+                        height: 20,
+                        width: 20,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          valueColor: AlwaysStoppedAnimation<Color>(
+                            Colors.white,
+                          ),
+                        ),
+                      )
+                    : const Text('Đăng ký'),
               ),
             ),
           ],
