@@ -72,3 +72,11 @@ flutter run
 - PostgreSQL >= 14
 
 Tham khảo chi tiết quy tắc tại `rule_generating_agent.mdc`.
+
+
+## Ghi chú thay đổi (ghi_chu.md)
+Repo đã cấu hình tự động cập nhật ghi chú sau mỗi commit qua git hook (post-commit).
+- Hooks path: `.githooks/`
+- Script: `scripts/update_notes.sh`
+- Không cần thao tác thủ công; mỗi commit sẽ được append vào `ghi_chu.md` theo định dạng chuẩn.
+- Nếu hook không chạy, xem mục "Khắc phục sự cố" trong `rule_generating_agent.mdc`.

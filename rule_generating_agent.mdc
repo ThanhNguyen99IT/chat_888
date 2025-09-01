@@ -392,3 +392,32 @@ project_root/
 ```
 
 Lưu ý cập nhật README khi có thay đổi lớn; tránh đưa chi tiết kỹ thuật dài (đưa sang `ghi_chu.md` hoặc wiki) để không trùng lặp và không lãng phí.
+---
+# Ghi chú dự án (ghi_chu.md) — Quy tắc bảo trì tự động
+
+1) Mục tiêu
+- Ghi lại lịch sử thay đổi ở mức tóm tắt, có cấu trúc, phục vụ tra cứu nhanh.
+
+2) Cơ chế tự động
+- Sử dụng git hooks (post-commit) để tự động append tóm tắt commit vào `ghi_chu.md` sau mỗi lần commit.
+- Hooks path: `.githooks/` (đã cấu hình `core.hooksPath` trong repo).
+- Script thực thi: `scripts/update_notes.sh`.
+
+3) Định dạng ghi chú
+- Mỗi commit được ghi theo block:
+  - `## Commit <hash ngắn>`
+  - `- Author: <tên>`
+  - `- Date: <ISO datetime>`
+  - `- Title: <subject>`
+  - `- Notes: |` (tuỳ chọn, in phần body nếu có, indent 2 spaces)
+
+4) Nguyên tắc
+- Không sửa tay lại các block đã sinh tự động (để giữ tính nhất quán và diff sạch).
+- Nếu cần bổ sung ghi chú thủ công, thêm phía dưới bằng tiêu đề `## Manual Notes`.
+- Không commit `.env` hay dữ liệu nhạy cảm vào `ghi_chu.md`.
+
+5) Khắc phục sự cố
+- Nếu hook không chạy, kiểm tra:
+  - `git config core.hooksPath` có trỏ về `.githooks`.
+  - Quyền thực thi: `chmod +x .githooks/post-commit scripts/update_notes.sh`.
+  - Chạy thử `scripts/update_notes.sh` để xác minh.
