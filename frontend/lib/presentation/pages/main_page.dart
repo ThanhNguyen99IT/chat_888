@@ -42,13 +42,55 @@ class CustomBottomNavigationBar extends StatelessWidget {
                   (currentIndex - previousIndex) *
                       Curves.easeInOut.transform(animationController!.value);
 
-              return CustomPaint(
-                size: Size(screenWidth, 80),
-                painter: BottomBarPainter(
-                  animatedIndex: animatedIndex,
-                  itemCount: items.length,
-                  primaryColor: AppTheme.primaryColor,
-                ),
+              return Stack(
+                clipBehavior: Clip.none,
+                children: [
+                  CustomPaint(
+                    size: Size(screenWidth, 80),
+                    painter: BottomBarPainter(
+                      animatedIndex: animatedIndex,
+                      itemCount: items.length,
+                      primaryColor: AppTheme.primaryColor,
+                    ),
+                  ),
+
+                  // Moving circle + selected icon in-sync with bump
+                  Positioned(
+                    left:
+                        animatedIndex * itemWidth +
+                        (itemWidth - circleRadius * 2) / 2,
+                    top: 8 - 23,
+                    child: Container(
+                      width: circleRadius * 2,
+                      height: circleRadius * 2,
+                      decoration: BoxDecoration(
+                        color: AppTheme.primaryColor,
+                        shape: BoxShape.circle,
+                        boxShadow: [
+                          BoxShadow(
+                            color: AppTheme.primaryColor.withOpacity(0.25),
+                            blurRadius: 12,
+                            offset: const Offset(0, 4),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  Positioned(
+                    left: animatedIndex * itemWidth + (itemWidth - 48) / 2,
+                    top: 8 - 23 + (circleRadius * 2 - 48) / 2,
+                    child: Container(
+                      width: 48,
+                      height: 48,
+                      alignment: Alignment.center,
+                      child: Icon(
+                        (items[currentIndex].icon as Icon).icon!,
+                        color: Colors.white,
+                        size: 28,
+                      ),
+                    ),
+                  ),
+                ],
               );
             },
           )
@@ -61,47 +103,6 @@ class CustomBottomNavigationBar extends StatelessWidget {
               primaryColor: AppTheme.primaryColor,
             ),
           ),
-
-        // Animated circular background that moves between icons
-        AnimatedPositioned(
-          duration: const Duration(milliseconds: 300),
-          curve: Curves.easeInOut,
-          left: currentIndex * itemWidth + (itemWidth - circleRadius * 2) / 2,
-          top: 8 - 23, // Same offset as selected icon
-          child: Container(
-            width: circleRadius * 2,
-            height: circleRadius * 2,
-            decoration: BoxDecoration(
-              color: AppTheme.primaryColor,
-              shape: BoxShape.circle,
-              boxShadow: [
-                BoxShadow(
-                  color: AppTheme.primaryColor.withOpacity(0.25),
-                  blurRadius: 12,
-                  offset: const Offset(0, 4),
-                ),
-              ],
-            ),
-          ),
-        ),
-
-        // Animated icon that moves with the circle
-        AnimatedPositioned(
-          duration: const Duration(milliseconds: 300),
-          curve: Curves.easeInOut,
-          left: currentIndex * itemWidth + (itemWidth - 48) / 2,
-          top: 8 - 23 + (circleRadius * 2 - 48) / 2, // Center icon in circle
-          child: Container(
-            width: 48,
-            height: 48,
-            alignment: Alignment.center,
-            child: Icon(
-              (items[currentIndex].icon as Icon).icon!,
-              color: Colors.white,
-              size: 28,
-            ),
-          ),
-        ),
 
         // Bottom bar content
         Container(
