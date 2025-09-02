@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../core/theme/app_theme.dart';
+import '../../core/constants/app_constants.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -18,7 +19,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   void initState() {
     super.initState();
     _animationController = AnimationController(
-      duration: const Duration(milliseconds: 300),
+      duration: AppConstants.searchAnimationDuration,
       vsync: this,
     );
     _widthAnimation = Tween<double>(begin: 40.0, end: 300.0).animate(
@@ -103,6 +104,8 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                             child: TextField(
                               controller: _searchController,
                               autofocus: true,
+                              textAlignVertical: TextAlignVertical.center,
+                              maxLines: 1,
                               decoration: InputDecoration(
                                 hintText: 'Tìm kiếm...',
                                 hintStyle: TextStyle(
@@ -114,7 +117,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                                 enabledBorder: InputBorder.none,
                                 contentPadding: const EdgeInsets.symmetric(
                                   horizontal: 16,
-                                  vertical: 8,
+                                  vertical: 10,
                                 ),
                               ),
                               style: const TextStyle(

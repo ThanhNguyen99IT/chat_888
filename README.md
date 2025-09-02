@@ -52,9 +52,15 @@ flutter run
 - **POST** `/api/auth/register` - Đăng ký user mới
 - **POST** `/api/auth/login` - Đăng nhập
 - **GET** `/api/auth/profile` - Lấy thông tin user (cần token)
+- **POST** `/api/auth/upload-avatar` - Upload ảnh đại diện (cần token)
 
-## API mẫu
-- `GET /api/health` → `{ status: "success", message: "OK", data: {} }`
+## Features
+- ✅ Đăng ký/Đăng nhập với PostgreSQL
+- ✅ Upload ảnh đại diện
+- ✅ Quản lý token authentication
+- ✅ UI responsive với rounded corners
+- ✅ Search bar animation
+- ✅ Bottom navigation
 
 ## Chuẩn cấu trúc & ánh xạ
 - Mặc định dùng cấu trúc Basic (đơn giản, theo `frontend/lib/{api,models,screens,widgets,utils,theme}`)

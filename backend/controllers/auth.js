@@ -1,10 +1,65 @@
 const db = require('../config/db');
 const crypto = require('crypto');
+const multer = require('multer');
+const path = require('path');
 
 // Tạo token ngẫu nhiên
 const generateToken = () => {
   return crypto.randomBytes(32).toString('hex');
 };
+
+// Cấu hình multer cho upload ảnh
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, 'uploads/');
+  },
+  filename: (req, file, cb) => {
+    // Tạo tên file unique: timestamp_randomstring.extension
+    const uniqueSuffix = Date.now() + '_' + Math.round(Math.random() * 1E9);
+    cb(null, uniqueSuffix + path.extname(file.originalname));
+  }
+});
+
+const fileFilter = (req, file, cb) => {
+  console.log('📄 File info:', {
+    fieldname: file.fieldname,
+    originalname: file.originalname,
+    mimetype: file.mimetype,
+    size: file.size
+  });
+  
+  // Chỉ cho phép file ảnh - thêm nhiều MIME types và extension check
+  const allowedMimeTypes = [
+    'image/jpeg',
+    'image/jpg', 
+    'image/png',
+    'image/gif',
+    'image/webp',
+    'image/bmp',
+    'image/svg+xml'
+  ];
+  
+  const allowedExtensions = ['.jpg', '.jpeg', '.png', '.gif', '.webp', '.bmp', '.svg'];
+  const fileExtension = path.extname(file.originalname).toLowerCase();
+  
+  if (allowedMimeTypes.includes(file.mimetype) || allowedExtensions.includes(fileExtension)) {
+    console.log('✅ File accepted:', file.originalname);
+    cb(null, true);
+  } else {
+    console.log('❌ File rejected:', file.mimetype, fileExtension);
+    const error = new Error('Chỉ được upload file ảnh (jpg, png, gif, webp, bmp, svg)!');
+    error.code = 'INVALID_FILE_TYPE';
+    cb(error, false);
+  }
+};
+
+const upload = multer({
+  storage: storage,
+  fileFilter: fileFilter,
+  limits: {
+    fileSize: 5 * 1024 * 1024 // 5MB
+  }
+});
 
 // Đăng ký
 exports.register = async (req, res) => {
@@ -30,7 +85,7 @@ exports.register = async (req, res) => {
       });
     }
 
-    // Tạo token mới
+    // Tạo token ngẫu nhiên
     const token = generateToken();
 
     // Thêm user mới vào database
@@ -143,7 +198,7 @@ exports.getProfile = async (req, res) => {
       });
     }
 
-    const query = 'SELECT id, name, phone, token, created_at FROM users WHERE token = $1';
+    const query = 'SELECT id, name, phone, token, image_url, created_at FROM users WHERE token = $1';
     const result = await db.query(query, [token]);
 
     if (result.rows.length === 0) {
@@ -171,3 +226,91 @@ exports.getProfile = async (req, res) => {
     });
   }
 };
+
+// Middleware xử lý lỗi multer
+exports.handleMulterError = (err, req, res, next) => {
+  if (err) {
+    if (err.code === 'INVALID_FILE_TYPE') {
+      return res.status(400).json({
+        status: 'error',
+        message: 'Chỉ được upload file ảnh (jpg, png, gif, etc.)',
+        data: {}
+      });
+    }
+    if (err.code === 'LIMIT_FILE_SIZE') {
+      return res.status(400).json({
+        status: 'error',
+        message: 'File quá lớn. Tối đa 5MB',
+        data: {}
+      });
+    }
+    return res.status(400).json({
+      status: 'error',
+      message: err.message || 'Lỗi upload file',
+      data: {}
+    });
+  }
+  next();
+};
+
+// Upload ảnh đại diện
+exports.uploadAvatar = async (req, res) => {
+  try {
+    const { token } = req.headers;
+
+    if (!token) {
+      return res.status(401).json({
+        status: 'error',
+        message: 'Vui lòng cung cấp token xác thực',
+        data: {}
+      });
+    }
+
+    if (!req.file) {
+      return res.status(400).json({
+        status: 'error',
+        message: 'Vui lòng chọn file ảnh',
+        data: {}
+      });
+    }
+
+    // Kiểm tra user tồn tại
+    const userQuery = 'SELECT id FROM users WHERE token = $1';
+    const userResult = await db.query(userQuery, [token]);
+
+    if (userResult.rows.length === 0) {
+      return res.status(401).json({
+        status: 'error',
+        message: 'Token không hợp lệ',
+        data: {}
+      });
+    }
+
+    const userId = userResult.rows[0].id;
+    const imageUrl = `/uploads/${req.file.filename}`;
+
+    // Cập nhật image_url trong database
+    const updateQuery = 'UPDATE users SET image_url = $1 WHERE id = $2 RETURNING id, name, phone, image_url';
+    const updateResult = await db.query(updateQuery, [imageUrl, userId]);
+
+    return res.json({
+      status: 'success',
+      message: 'Upload ảnh đại diện thành công',
+      data: {
+        user: updateResult.rows[0],
+        imageUrl: imageUrl
+      }
+    });
+
+  } catch (error) {
+    console.error('Lỗi upload ảnh:', error);
+    return res.status(500).json({
+      status: 'error',
+      message: 'Lỗi máy chủ, vui lòng thử lại',
+      data: {}
+    });
+  }
+};
+
+// Export multer upload middleware
+exports.uploadMiddleware = upload.single('avatar');

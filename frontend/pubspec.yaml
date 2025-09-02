@@ -40,6 +40,12 @@ dependencies:
   
   # Iconsax - Beautiful icons for Flutter
   iconsax: ^0.0.8
+  
+  # Pick images from gallery/camera
+  image_picker: ^1.0.7
+  
+  # Shared preferences for storing user data
+  shared_preferences: ^2.2.2
 
 dev_dependencies:
   flutter_test:

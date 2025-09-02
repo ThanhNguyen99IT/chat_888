@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:iconsax/iconsax.dart';
 import '../../core/theme/app_theme.dart';
+import '../../core/constants/app_constants.dart';
 
 class ContactsPage extends StatefulWidget {
   const ContactsPage({super.key});
@@ -10,26 +11,7 @@ class ContactsPage extends StatefulWidget {
 }
 
 class _ContactsPageState extends State<ContactsPage> {
-  final List<Map<String, dynamic>> _contacts = [
-    {
-      'name': 'Nguyen Van A',
-      'phone': '0912345678',
-      'avatar': 'A',
-      'status': 'online',
-    },
-    {
-      'name': 'Tran Thi B',
-      'phone': '0987654321',
-      'avatar': 'B',
-      'status': 'offline',
-    },
-    {
-      'name': 'Le Van C',
-      'phone': '0933334444',
-      'avatar': 'C',
-      'status': 'online',
-    },
-  ];
+  final List<Map<String, dynamic>> _contacts = AppConstants.sampleContacts;
 
   @override
   Widget build(BuildContext context) {

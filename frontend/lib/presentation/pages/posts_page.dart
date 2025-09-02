@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:iconsax/iconsax.dart';
 import '../../core/theme/app_theme.dart';
+import '../../core/constants/app_constants.dart';
 
 class PostsPage extends StatefulWidget {
   const PostsPage({super.key});
@@ -10,29 +11,7 @@ class PostsPage extends StatefulWidget {
 }
 
 class _PostsPageState extends State<PostsPage> {
-  final List<Map<String, dynamic>> _posts = [
-    {
-      'author': 'Nguyen Van A',
-      'content': 'Chào mừng đến với ứng dụng chat 888! 🎉',
-      'time': '2 giờ trước',
-      'likes': 5,
-      'comments': 3,
-    },
-    {
-      'author': 'Tran Thi B',
-      'content': 'Ứng dụng rất tiện lợi và dễ sử dụng 👍',
-      'time': '5 giờ trước',
-      'likes': 8,
-      'comments': 2,
-    },
-    {
-      'author': 'Le Van C',
-      'content': 'Tính năng nhắn tin rất nhanh và ổn định',
-      'time': '1 ngày trước',
-      'likes': 12,
-      'comments': 7,
-    },
-  ];
+  final List<Map<String, dynamic>> _posts = AppConstants.samplePosts;
 
   @override
   Widget build(BuildContext context) {
