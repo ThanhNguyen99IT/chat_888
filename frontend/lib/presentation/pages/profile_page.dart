@@ -60,7 +60,7 @@ class _ProfilePageState extends State<ProfilePage> {
 
       print('🔑 Using token: $_userToken');
 
-      const String baseUrl = AppConstants.baseUrl;
+      final String baseUrl = AppConstants.baseUrl;
       final uri = Uri.parse('$baseUrl${AppConstants.apiAuthPath}/profile');
 
       final response = await http.get(
@@ -215,7 +215,7 @@ class _ProfilePageState extends State<ProfilePage> {
         }
       }
 
-      const String baseUrl = AppConstants.baseUrl;
+      final String baseUrl = AppConstants.baseUrl;
       final uri = Uri.parse(
         '$baseUrl${AppConstants.apiAuthPath}/upload-avatar',
       );

@@ -6,7 +6,7 @@ import '../models/user_model.dart';
 import '../../core/constants/app_constants.dart';
 
 class AuthApi {
-  static const String baseUrl =
+  static final String baseUrl =
       '${AppConstants.baseUrl}${AppConstants.apiAuthPath}';
 
   // Timeout cho các request

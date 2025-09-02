@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Background -->
+    <item>
+        <shape android:shape="rectangle">
+            <solid android:color="#7B91FF"/>
+        </shape>
+    </item>
+    
+    <!-- Logo với kích thước cố định (nhỏ hơn nữa) -->
+    <item android:width="60dp" android:height="60dp" android:gravity="center">
+        <bitmap android:src="@drawable/splash"/>
+    </item>
+</layer-list>

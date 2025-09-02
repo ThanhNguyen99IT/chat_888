@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Background màu chủ đạo -->
+    <item>
+        <shape android:shape="rectangle">
+            <solid android:color="#7B91FF"/>
+        </shape>
+    </item>
+    
+    <!-- Icon rất nhỏ với padding lớn -->
+    <item 
+        android:left="160dp"
+        android:right="160dp"
+        android:top="320dp"
+        android:bottom="320dp">
+        <shape android:shape="oval">
+            <solid android:color="#FFFFFF"/>
+            <size android:width="24dp" android:height="24dp"/>
+        </shape>
+    </item>
+    
+    <!-- Chat icon siêu nhỏ -->
+    <item 
+        android:drawable="@drawable/chat_icon"
+        android:width="16dp" 
+        android:height="16dp"
+        android:gravity="center" />
+</layer-list>
