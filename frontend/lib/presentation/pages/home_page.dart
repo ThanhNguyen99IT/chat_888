@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/constants/app_constants.dart';
+import '../../data/models/conversation.dart';
+import '../widgets/conversation_item.dart';
+import 'chat_screen.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -14,6 +17,8 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   late Animation<double> _widthAnimation;
   bool _isSearchExpanded = false;
   final TextEditingController _searchController = TextEditingController();
+  List<Conversation> _conversations = [];
+  List<Conversation> _filteredConversations = [];
 
   @override
   void initState() {
@@ -25,6 +30,41 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
     _widthAnimation = Tween<double>(begin: 40.0, end: 300.0).animate(
       CurvedAnimation(parent: _animationController, curve: Curves.easeInOut),
     );
+    _loadConversations();
+  }
+
+  void _loadConversations() {
+    // Load sample conversations
+    _conversations = AppConstants.sampleConversations
+        .map((data) => Conversation.fromJson(data))
+        .toList();
+
+    // Sort by last message time (newest first)
+    _conversations.sort(
+      (a, b) => b.lastMessageTime.compareTo(a.lastMessageTime),
+    );
+
+    _filteredConversations = List.from(_conversations);
+  }
+
+  void _filterConversations(String query) {
+    setState(() {
+      if (query.isEmpty) {
+        _filteredConversations = List.from(_conversations);
+      } else {
+        _filteredConversations = _conversations
+            .where(
+              (conversation) =>
+                  conversation.name.toLowerCase().contains(
+                    query.toLowerCase(),
+                  ) ||
+                  conversation.lastMessage.toLowerCase().contains(
+                    query.toLowerCase(),
+                  ),
+            )
+            .toList();
+      }
+    });
   }
 
   @override
@@ -125,8 +165,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                                 fontSize: 14,
                               ),
                               onChanged: (value) {
-                                // TODO: Implement search functionality
-                                print('Search: $value');
+                                _filterConversations(value);
                               },
                               onSubmitted: (value) {
                                 // TODO: Handle search submission
@@ -169,31 +208,123 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
             ),
             child: Container(
               color: Colors.white,
-              child: const Center(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(
-                      Icons.chat_bubble_outline,
-                      size: 64,
-                      color: Color(0xFF7B91FF),
-                    ),
-                    SizedBox(height: 16),
-                    Text(
-                      'Welcome to 888',
-                      style: TextStyle(
-                        fontSize: 24,
-                        fontWeight: FontWeight.bold,
-                        color: Color(0xFF7B91FF),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
+              child: _filteredConversations.isEmpty
+                  ? _buildEmptyState()
+                  : _buildConversationList(),
             ),
           ),
         ),
       ),
     );
+  }
+
+  Widget _buildConversationList() {
+    return Column(
+      children: [
+        // Conversation list
+        Expanded(
+          child: ListView.separated(
+            itemCount: _filteredConversations.length,
+            separatorBuilder: (context, index) => Divider(
+              height: 1,
+              color: Colors.grey.shade100,
+              indent: 76, // Align with conversation content
+            ),
+            itemBuilder: (context, index) {
+              final conversation = _filteredConversations[index];
+              return ConversationItem(
+                conversation: conversation,
+                onTap: () => _onConversationTap(conversation),
+              );
+            },
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildEmptyState() {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(
+            _searchController.text.isNotEmpty
+                ? Icons.search_off
+                : Icons.chat_bubble_outline,
+            size: 64,
+            color: Colors.grey.shade400,
+          ),
+          const SizedBox(height: 16),
+          Text(
+            _searchController.text.isNotEmpty
+                ? 'Không tìm thấy cuộc trò chuyện'
+                : 'Chưa có cuộc trò chuyện nào',
+            style: TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.w500,
+              color: Colors.grey.shade600,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            _searchController.text.isNotEmpty
+                ? 'Thử tìm kiếm với từ khóa khác'
+                : 'Bắt đầu cuộc trò chuyện đầu tiên',
+            style: TextStyle(fontSize: 14, color: Colors.grey.shade500),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _onConversationTap(Conversation conversation) {
+    // Nếu thanh tìm kiếm đang mở và trống, đóng thanh tìm kiếm trước
+    if (_isSearchExpanded && _searchController.text.isEmpty) {
+      _toggleSearch();
+      return;
+    }
+
+    // Lưu trạng thái search hiện tại
+    final wasSearchExpanded = _isSearchExpanded;
+    final searchText = _searchController.text;
+
+    // Nếu có text trong search, đóng search trước khi navigate nhưng giữ text
+    if (_isSearchExpanded) {
+      setState(() {
+        _isSearchExpanded = false;
+        _animationController.reverse();
+        FocusScope.of(context).unfocus();
+        // Không clear text để giữ lại sau khi quay về
+      });
+
+      // Delay một chút để animation hoàn thành
+      Future.delayed(const Duration(milliseconds: 300), () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => ChatScreen(conversation: conversation),
+          ),
+        ).then((_) {
+          // Khi quay lại từ ChatScreen, khôi phục trạng thái search
+          if (wasSearchExpanded && searchText.isNotEmpty) {
+            setState(() {
+              _isSearchExpanded = true;
+              _animationController.forward();
+              // Text đã được giữ lại trong controller
+              _filterConversations(searchText);
+            });
+          }
+        });
+      });
+    } else {
+      // Nếu search không mở, navigate bình thường
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => ChatScreen(conversation: conversation),
+        ),
+      );
+    }
   }
 }

@@ -60,9 +60,6 @@ dev_dependencies:
   
   # For generating app icons
   flutter_launcher_icons: ^0.13.1
-  
-  # For native splash screen
-  flutter_native_splash: ^2.3.10
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
@@ -133,12 +130,4 @@ flutter_launcher_icons:
     background_color: "#7B91FF"
 
 # Flutter Native Splash configuration
-flutter_native_splash:
-  color: "#7B91FF"
-  image: "assets/images/duck_adaptive_foreground.png"
-  color_dark: "#7B91FF"
-  image_dark: "assets/images/duck_adaptive_foreground.png"
-  android_12:
-    image: "assets/images/duck_adaptive_foreground.png"
-    icon_background_color: "#7B91FF"
-    color: "#7B91FF"
+
