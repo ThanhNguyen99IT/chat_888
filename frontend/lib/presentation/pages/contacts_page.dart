@@ -34,6 +34,10 @@ class _ContactsPageState extends State<ContactsPage>
 
   void _loadContacts() {
     _contacts = List.from(AppConstants.sampleContacts);
+    // Sắp xếp danh bạ theo tên
+    _contacts.sort(
+      (a, b) => a['name'].toLowerCase().compareTo(b['name'].toLowerCase()),
+    );
     _filteredContacts = List.from(_contacts);
   }
 
@@ -49,6 +53,10 @@ class _ContactsPageState extends State<ContactsPage>
                   contact['phone'].toLowerCase().contains(query.toLowerCase()),
             )
             .toList();
+        // Sắp xếp lại kết quả tìm kiếm theo tên
+        _filteredContacts.sort(
+          (a, b) => a['name'].toLowerCase().compareTo(b['name'].toLowerCase()),
+        );
       }
     });
   }
@@ -206,16 +214,63 @@ class _ContactsPageState extends State<ContactsPage>
   }
 
   Widget _buildContactsList() {
-    return ListView.separated(
-      itemCount: _filteredContacts.length,
-      separatorBuilder: (context, index) => Divider(
-        height: 1,
-        color: Colors.grey.shade100,
-        indent: 72, // Align with contact content
-      ),
+    // Nhóm danh bạ theo chữ cái đầu
+    Map<String, List<Map<String, dynamic>>> groupedContacts = {};
+
+    for (var contact in _filteredContacts) {
+      String firstLetter = contact['name'].toUpperCase().substring(0, 1);
+      if (!groupedContacts.containsKey(firstLetter)) {
+        groupedContacts[firstLetter] = [];
+      }
+      groupedContacts[firstLetter]!.add(contact);
+    }
+
+    // Sắp xếp các chữ cái
+    List<String> sortedLetters = groupedContacts.keys.toList()..sort();
+
+    return ListView.builder(
+      itemCount: sortedLetters.length,
       itemBuilder: (context, index) {
-        final contact = _filteredContacts[index];
-        return _buildContactItem(contact);
+        String letter = sortedLetters[index];
+        List<Map<String, dynamic>> contactsInGroup = groupedContacts[letter]!;
+
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Header cho chữ cái
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              color: Colors.grey.shade50,
+              child: Text(
+                letter,
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                  color: AppTheme.primaryColor,
+                ),
+              ),
+            ),
+            // Danh sách liên hệ trong nhóm
+            ...contactsInGroup.asMap().entries.map((entry) {
+              int contactIndex = entry.key;
+              Map<String, dynamic> contact = entry.value;
+              bool isLastInGroup = contactIndex == contactsInGroup.length - 1;
+
+              return Column(
+                children: [
+                  _buildContactItem(contact),
+                  if (!isLastInGroup)
+                    Divider(
+                      height: 1,
+                      color: Colors.grey.shade100,
+                      indent: 72, // Align with contact content
+                    ),
+                ],
+              );
+            }).toList(),
+          ],
+        );
       },
     );
   }
