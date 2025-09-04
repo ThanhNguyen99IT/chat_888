@@ -294,7 +294,7 @@ class _PostsPageState extends State<PostsPage> with TickerProviderStateMixin {
         decoration: BoxDecoration(
           color: Colors.white.withOpacity(0.8),
           borderRadius: BorderRadius.circular(10),
-          border: Border.all(color: Colors.grey.shade400, width: 1),
+          border: Border.all(color: Colors.grey.shade500, width: 1),
           boxShadow: [
             BoxShadow(
               color: Colors.black.withOpacity(0.1),
@@ -314,7 +314,7 @@ class _PostsPageState extends State<PostsPage> with TickerProviderStateMixin {
                 Iconsax.play_circle,
                 color: _isVideoMode
                     ? AppTheme.primaryColor
-                    : Colors.grey.shade400,
+                    : Colors.grey.shade500,
                 size: 28,
               ),
             ),
@@ -326,7 +326,7 @@ class _PostsPageState extends State<PostsPage> with TickerProviderStateMixin {
               child: Icon(
                 Iconsax.document_text,
                 color: _isVideoMode
-                    ? Colors.grey.shade400
+                    ? Colors.grey.shade500
                     : AppTheme.primaryColor,
                 size: 28,
               ),

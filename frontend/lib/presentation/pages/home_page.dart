@@ -142,7 +142,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
         decoration: BoxDecoration(
           shape: BoxShape.rectangle,
           borderRadius: BorderRadius.circular(14),
-          border: Border.all(color: color, width: 2),
+          border: Border.all(color: color, width: 1),
         ),
         child: Center(
           child: isSvg
