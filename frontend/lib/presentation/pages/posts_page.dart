@@ -13,31 +13,34 @@ class PostsPage extends StatefulWidget {
 class _PostsPageState extends State<PostsPage> with TickerProviderStateMixin {
   final List<Map<String, dynamic>> _posts = AppConstants.samplePosts;
   late TabController _tabController;
-  late AnimationController _animationController;
-  late Animation<double> _scaleAnimation;
+  int _currentTabIndex = 1;
+  int _previousTabIndex = 1;
   bool _isVideoMode = false; // false = bài viết (mặc định), true = video
 
   @override
   void initState() {
     super.initState();
     _tabController = TabController(length: 3, vsync: this, initialIndex: 1);
-
-    _animationController = AnimationController(
-      duration: const Duration(milliseconds: 200),
-      vsync: this,
-    );
-
-    _scaleAnimation = Tween<double>(begin: 1.0, end: 1.05).animate(
-      CurvedAnimation(parent: _animationController, curve: Curves.easeInOut),
-    );
-
     _tabController.addListener(_onTabChanged);
+  }
+
+  Widget _buildTabContent() {
+    return TabBarView(
+      controller: _tabController,
+      physics: const BouncingScrollPhysics(),
+      children: [
+        _buildPostsList('Bạn bè'),
+        _buildPostsList('Cộng đồng'),
+        _buildPostsList('Theo dõi'),
+      ],
+    );
   }
 
   void _onTabChanged() {
     if (_tabController.indexIsChanging) {
-      _animationController.forward().then((_) {
-        _animationController.reverse();
+      setState(() {
+        _previousTabIndex = _currentTabIndex;
+        _currentTabIndex = _tabController.index;
       });
     }
   }
@@ -45,7 +48,6 @@ class _PostsPageState extends State<PostsPage> with TickerProviderStateMixin {
   @override
   void dispose() {
     _tabController.dispose();
-    _animationController.dispose();
     super.dispose();
   }
 
@@ -147,56 +149,34 @@ class _PostsPageState extends State<PostsPage> with TickerProviderStateMixin {
                 topLeft: Radius.circular(25),
                 topRight: Radius.circular(25),
               ),
-              child: Container(
-                color: Colors.white,
-                child: AnimatedBuilder(
-                  animation: _scaleAnimation,
-                  builder: (context, child) {
-                    return Transform.scale(
-                      scale: _scaleAnimation.value,
-                      child: TabBarView(
-                        controller: _tabController,
-                        physics: const BouncingScrollPhysics(),
-                        children: [
-                          // Tab Bạn bè
-                          _buildPostsList('Bạn bè'),
-                          // Tab Cộng đồng
-                          _buildPostsList('Cộng đồng'),
-                          // Tab Theo dõi
-                          _buildPostsList('Theo dõi'),
-                        ],
-                      ),
-                    );
-                  },
-                ),
-              ),
+              child: Container(color: Colors.white, child: _buildTabContent()),
             ),
           ),
           // Floating Action Button
           Positioned(right: 8, bottom: 20, child: _buildFloatingActionButton()),
-          // Icon chia sẻ
-          Positioned(
-            right: 0,
-            bottom: 95,
+          // Icon chia sẻ (animated)
+          _buildAnimatedAction(
             child: _buildActionIcon(Iconsax.send_2, 'Chia sẻ'),
+            shownBottom: 95,
+            index: 0,
           ),
-          // Icon lưu
-          Positioned(
-            right: 0,
-            bottom: 135,
+          // Icon lưu (animated)
+          _buildAnimatedAction(
             child: _buildActionIconWithCount(Iconsax.bookmark, 'Lưu', 12),
+            shownBottom: 135,
+            index: 1,
           ),
-          // Icon bình luận
-          Positioned(
-            right: 0,
-            bottom: 195,
+          // Icon bình luận (animated)
+          _buildAnimatedAction(
             child: _buildActionIconWithCount(Iconsax.message, 'Bình luận', 34),
+            shownBottom: 195,
+            index: 2,
           ),
-          // Icon tim
-          Positioned(
-            right: 0,
-            bottom: 255,
+          // Icon tim (animated)
+          _buildAnimatedAction(
             child: _buildActionIconWithCount(Iconsax.heart, 'Tim', 56),
+            shownBottom: 255,
+            index: 3,
           ),
         ],
       ),
@@ -408,6 +388,37 @@ class _PostsPageState extends State<PostsPage> with TickerProviderStateMixin {
           ),
         ),
       ],
+    );
+  }
+
+  // Animated positioned helper: when in video mode show at shownBottom, else hide at pill bottom
+  Widget _buildAnimatedAction({
+    required Widget child,
+    required double shownBottom,
+    required int index,
+  }) {
+    const double pillBottom = 20;
+    final double hiddenBottom = pillBottom; // Start/end at pill position
+
+    // Staggered animation by index
+    final int baseMs = 250;
+    final int delayMs = 40 * index;
+    final duration = Duration(milliseconds: baseMs + delayMs);
+
+    final double targetBottom = _isVideoMode ? shownBottom : hiddenBottom;
+    final double targetOpacity = _isVideoMode ? 1.0 : 0.0;
+
+    return AnimatedPositioned(
+      right: 0,
+      bottom: targetBottom,
+      duration: duration,
+      curve: Curves.easeOutCubic,
+      child: AnimatedOpacity(
+        duration: duration,
+        opacity: targetOpacity,
+        curve: Curves.easeOut,
+        child: IgnorePointer(ignoring: !_isVideoMode, child: child),
+      ),
     );
   }
 }

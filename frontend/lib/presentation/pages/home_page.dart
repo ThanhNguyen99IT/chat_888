@@ -1,4 +1,6 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/constants/app_constants.dart';
 import '../../data/models/conversation.dart';
@@ -19,6 +21,12 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   final TextEditingController _searchController = TextEditingController();
   List<Conversation> _conversations = [];
   List<Conversation> _filteredConversations = [];
+  bool _isQrPressed = false;
+  bool _isAddPressed = false;
+  Timer? _qrTimer;
+  Timer? _addTimer;
+  DateTime? _lastQrClick;
+  DateTime? _lastAddClick;
 
   @override
   void initState() {
@@ -71,7 +79,86 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   void dispose() {
     _animationController.dispose();
     _searchController.dispose();
+    _qrTimer?.cancel();
+    _addTimer?.cancel();
     super.dispose();
+  }
+
+  void _handleButtonPress(bool isQrButton) {
+    final now = DateTime.now();
+
+    // Debounce: ignore clicks within 200ms
+    if (isQrButton) {
+      if (_lastQrClick != null &&
+          now.difference(_lastQrClick!).inMilliseconds < 200) {
+        return;
+      }
+      _lastQrClick = now;
+
+      _qrTimer?.cancel();
+      if (mounted) {
+        setState(() => _isQrPressed = true);
+      }
+
+      _qrTimer = Timer(const Duration(milliseconds: 150), () {
+        if (mounted) {
+          setState(() => _isQrPressed = false);
+        }
+      });
+    } else {
+      if (_lastAddClick != null &&
+          now.difference(_lastAddClick!).inMilliseconds < 200) {
+        return;
+      }
+      _lastAddClick = now;
+
+      _addTimer?.cancel();
+      if (mounted) {
+        setState(() => _isAddPressed = true);
+      }
+
+      _addTimer = Timer(const Duration(milliseconds: 150), () {
+        if (mounted) {
+          setState(() => _isAddPressed = false);
+        }
+      });
+    }
+  }
+
+  Widget _buildCustomButton({
+    required bool isPressed,
+    required VoidCallback onPressed,
+    required String tooltip,
+    required Widget child,
+    bool isSvg = false,
+  }) {
+    final color = isPressed ? AppTheme.primaryColor : Colors.grey.shade500;
+
+    return GestureDetector(
+      onTap: onPressed,
+      child: Container(
+        width: 48,
+        height: 48,
+        decoration: BoxDecoration(
+          shape: BoxShape.rectangle,
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(color: color, width: 2),
+        ),
+        child: Center(
+          child: isSvg
+              ? SvgPicture.asset(
+                  'assets/images/user-plus.svg',
+                  width: 26,
+                  height: 26,
+                  colorFilter: ColorFilter.mode(color, BlendMode.srcIn),
+                )
+              : IconTheme(
+                  data: IconThemeData(color: color),
+                  child: child,
+                ),
+        ),
+      ),
+    );
   }
 
   void _toggleSearch() {
@@ -214,32 +301,47 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
             ),
           ),
         ),
+        floatingActionButton: Padding(
+          padding: const EdgeInsets.only(bottom: 48, right: 16),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              _buildCustomButton(
+                isPressed: _isQrPressed,
+                onPressed: () => _handleButtonPress(true),
+                tooltip: 'Quét mã',
+                child: const Icon(Icons.qr_code_scanner, size: 24),
+              ),
+              const SizedBox(height: 12),
+              _buildCustomButton(
+                isPressed: _isAddPressed,
+                onPressed: () => _handleButtonPress(false),
+                tooltip: 'Thêm bạn',
+                child:
+                    const SizedBox(), // Placeholder, not used when isSvg=true
+                isSvg: true,
+              ),
+            ],
+          ),
+        ),
+        floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
       ),
     );
   }
 
   Widget _buildConversationList() {
-    return Column(
-      children: [
-        // Conversation list
-        Expanded(
-          child: ListView.separated(
-            itemCount: _filteredConversations.length,
-            separatorBuilder: (context, index) => Divider(
-              height: 1,
-              color: Colors.grey.shade100,
-              indent: 76, // Align with conversation content
-            ),
-            itemBuilder: (context, index) {
-              final conversation = _filteredConversations[index];
-              return ConversationItem(
-                conversation: conversation,
-                onTap: () => _onConversationTap(conversation),
-              );
-            },
-          ),
-        ),
-      ],
+    return ListView.separated(
+      itemCount: _filteredConversations.length,
+      separatorBuilder: (context, index) =>
+          Divider(height: 1, color: Colors.grey.shade100, indent: 76),
+      itemBuilder: (context, index) {
+        final conversation = _filteredConversations[index];
+        return ConversationItem(
+          conversation: conversation,
+          onTap: () => _onConversationTap(conversation),
+        );
+      },
     );
   }
 
